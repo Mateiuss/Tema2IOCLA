@@ -1,6 +1,8 @@
 %include "../include/io.mac"
 
 section .data
+    ; zona de memorie de patru octeti in care salvez pozitia la care adaug in 
+    ; sirul de caractere plain
     count dd 0
 
 section .text
@@ -22,6 +24,9 @@ spiral:
     ;; TODO: Implement spiral encryption
     ;; FREESTYLE STARTS HERE
 
+    ; in ceea ce urmeaza mai jos (pana la sfaristul urmatorului loop), salvez
+    ; in enc_string valorile care se gasesc in plain. Fac aceasta operatie cu
+    ; scopul de a elibera registrul ebx
     push ecx
     push eax
     push edx
@@ -36,37 +41,45 @@ make_enc_equal_to_plain:
     dec eax
     mov byte al, [eax]
     mov byte [edx + ecx - 1], al
-    ; PRINTF32 `%c \x0`, [edx + ecx - 1]
     pop eax
     loop make_enc_equal_to_plain
 
     pop ecx
 
+    ; salvez in ebx lungimea N, pentru a-l trata ca o adoua dimensiune a matricei
     mov ebx, eax
-
-    ; EBX has become m = n
 
     xor esi, esi ; k
     xor edi, edi ; l
+
+    ; tratez parcurgerea in spirala ca o serie de pasi in care parcurg laturile
+    ; unui patrat cu ajutorul a patru bucle. La fiecare pas parcurg un patrat
+    ; care se afla din ce in ce mai interiorul matricei
+
+    ; aceasta este bucla principala, din care se iese atunci cand s-a parcurs
+    ; fiecare patrat
 main_loop:
     cmp esi, ebx
     jge out_main_loop
     cmp edi, eax
     jge out_main_loop
-    ; Conditii de intrare in main_loop
+    ; conditii de intrare in main_loop
 
+    ; bucla care parcurge prima latura a patratului (latura de sus, de la stanga la dreapta)
     push edi
 loop1:
+    ; voi explica cum am implementat aceasta bulca, intrucat celelalte se aseamana cu aceasta.
+    ; conditie de intrare in bucla
     cmp edi, eax
     jge out_loop1
 
+    ; salvez in eax adresa la care trebuie sa adaug caracterul criptat din enc_string
     push eax
     mov eax, edx
     add eax, [count]
     inc dword [count]
 
-    ; enc[poz] = plain[poz] 
-
+    ; salvez in bl valoarea de pe pozitia curenta din key, dupa care o adaug in [eax]
     push ebx
     mov ebx, 4
     push eax
@@ -93,6 +106,7 @@ out_loop1:
     pop edi
     inc esi
 
+    ; bucla care parcurge a doua latura a patratului (latura din dreapta, parcursa de sus in jos)
     push esi
 loop2:
     cmp esi, ebx
@@ -142,6 +156,8 @@ if1:
     push esi
     mov esi, eax
     dec esi
+
+    ; bucla care parcurge latura de jos de la dreapta la stanga
 loop3:
     cmp esi, edi
     jl out_loop3
@@ -183,6 +199,8 @@ if2:
 
     push ebx
     dec ebx
+
+    ; bucla care parcurge latura din stanga de jos in sus
 loop4:
     cmp ebx, esi
     jl out_loop4
@@ -220,6 +238,7 @@ out_if2:
     jmp main_loop
 out_main_loop:
 
+    ; reinitializez valoarea catre care pointeaza 'count' cu 0
     mov dword [count], 0
 
     ;; FREESTYLE ENDS HERE

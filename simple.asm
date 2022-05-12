@@ -18,13 +18,20 @@ simple:
     ;; DO NOT MODIFY
    
     ;; Your code starts here
+
+    ; bucla cu care iterez prin sirul de carcatere
 bucla:
+    ; preiau elementul din sir
     mov byte bl, [esi + ecx - 1]
+    ; il maresc cu pasul dat
     add bl, dl
+    ; verific daca carcaterul marit este mai mare decat 'Z'
     cmp bl, "Z"
     jle lower
+    ; daca este mai mare decat 'Z', il dai inapoi cu 26 de pozitii
     sub bl, 26 
 lower:
+    ; altfel, il adaug in sirul criptat
     mov byte [edi + ecx - 1], bl
     loop bucla
 
